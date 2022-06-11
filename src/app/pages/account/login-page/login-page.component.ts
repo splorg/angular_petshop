@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { User } from 'src/app/models/user.model';
 import { DataService } from 'src/app/services/data.service';
+import { Security } from 'src/app/utils/security.util';
+import { CustomValidator } from 'src/app/validators/custom.validator';
 
 @Component({
   selector: 'app-login-page',
@@ -8,38 +12,66 @@ import { DataService } from 'src/app/services/data.service';
 })
 export class LoginPageComponent implements OnInit {
 
+  busy = false
+
   form: FormGroup
 
   constructor(
     private service: DataService,
-    private fb: FormBuilder
-    ) {
-      this.form = this.fb.group({
-        username: ['', Validators.compose([
-          Validators.minLength(11),
-          Validators.maxLength(11),
-          Validators.required
-        ])],
-        password: ['', Validators.compose([
-          Validators.minLength(8),
-          Validators.maxLength(24),
-          Validators.required
-        ])]
-      })
-     }
+    private fb: FormBuilder,
+    private router: Router
+    ) { }
 
   ngOnInit(): void {
+
+    this.form = this.fb.group({
+      username: ['', Validators.compose([
+        Validators.minLength(14),
+        Validators.maxLength(14),
+        Validators.required,
+        CustomValidator.isCpf()
+      ])],
+      password: ['', Validators.compose([
+        Validators.minLength(8),
+        Validators.maxLength(32),
+        Validators.required
+      ])]
+    })
+
+    const token = Security.getToken()
+    if (token) {
+      this.busy = true
+      this.service.refreshToken().subscribe({
+        next: (data: any) => {
+          this.busy = false
+          this.setUser(data.customer, data.token)
+        },
+        error: (error) => {
+          localStorage.clear()
+          this.busy = false
+        }
+      })
+    }
   }
 
   submit() {
+    this.busy = true
     this.service.authenticate(this.form.value)
-    .subscribe(
-      (data: any) => {
-      localStorage.setItem('petshop.token', data.token)
-    },
-      (error) => {
+    .subscribe({
+      next: (data: any) => {
+        this.busy = false
+        this.setUser(data.customer, data.token)
+      },
+      error: (error) => {
         console.log(error)
-      })
+        this.busy = false
+      }
+  })
+  }
+
+  setUser(user: User, token: string) {
+    Security.set(user, token)
+    this.router.navigate(['/'])
   }
 
 }
