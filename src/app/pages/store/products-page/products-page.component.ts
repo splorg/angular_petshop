@@ -9,7 +9,7 @@ import { Product } from 'src/app/models/product.model';
 })
 export class ProductsPageComponent implements OnInit {
 
-  public products: Product[]
+  public products: Product[] = []
 
   constructor(private service: DataService) { }
 

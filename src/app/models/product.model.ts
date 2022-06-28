@@ -1,8 +1,12 @@
-export interface Product {
-    _id: string;
-    title: string;
-    category: string;
-    description: string;
-    price: number;
-    image: string;
+export class Product {
+    constructor(
+        public _id: string,
+        public title: string,
+        public category: string,
+        public description: string,
+        public price: number,
+        public images: string[] = []
+    ) {
+
+    }
 }

@@ -12,6 +12,7 @@ export class DataService {
   constructor(private http: HttpClient) { }
 
   url = 'http://localhost:3000/v1'
+  productsUrl = 'http://localhost:3004/products'
 
   public composeHeaders() {
     const token = Security.getToken()
@@ -20,7 +21,7 @@ export class DataService {
   }
 
   getProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.url}/products`)
+    return this.http.get<Product[]>(this.productsUrl)
   }
 
   authenticate(data: any) {
